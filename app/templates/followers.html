@@ -1,0 +1,138 @@
+
+{% extends "base.html" %}
+
+{% block title %}Followers | {{ user.username }} | Devora{% endblock %}
+
+{% block content %}
+
+<div class="connections-page">
+
+    <a
+        href="{{ url_for('main.profile', username=user.username) }}"
+        class="page-back-link"
+    >
+        <span aria-hidden="true">←</span> Back to profile
+    </a>
+
+
+    <section class="connections-header">
+
+        <div>
+            <span class="eyebrow">YOUR COMMUNITY</span>
+
+            <h1>
+                Followers<span class="brand-dot">.</span>
+            </h1>
+
+            <p>
+                People who are keeping up with {{ user.username }}.
+            </p>
+        </div>
+
+        <div class="connections-count">
+            <span>{{ followers|length }}</span>
+            <small>
+                {{ 'follower' if followers|length == 1 else 'followers' }}
+            </small>
+        </div>
+
+    </section>
+
+
+    <section class="connections-list">
+
+        {% if followers %}
+
+            {% for follow in followers %}
+
+                {% set person = follow.follower %}
+
+                <article class="connection-card">
+
+                    <a
+                        href="{{ url_for('main.profile', username=person.username) }}"
+                        class="connection-avatar"
+                    >
+
+                        {% if person.profile_image %}
+                            <img
+                                src="{{ person.profile_image }}"
+                                alt="{{ person.username }}'s profile picture"
+                            >
+                        {% else %}
+                            <span>
+                                {{ person.username[0]|upper }}
+                            </span>
+                        {% endif %}
+
+                    </a>
+
+
+                    <div class="connection-information">
+
+                        <a
+                            href="{{ url_for('main.profile', username=person.username) }}"
+                            class="connection-name"
+                        >
+                            {{ person.username }}
+                        </a>
+
+                        <span class="connection-handle">
+                            @{{ person.username }}
+                        </span>
+
+                        {% if person.bio %}
+                            <p class="connection-bio">
+                                {{ person.bio }}
+                            </p>
+                        {% else %}
+                            <p class="connection-bio connection-bio-empty">
+                                No bio added yet.
+                            </p>
+                        {% endif %}
+
+                    </div>
+
+
+                    <a
+                        href="{{ url_for('main.profile', username=person.username) }}"
+                        class="button button-secondary connection-view-button"
+                    >
+                        View profile <span aria-hidden="true">↗</span>
+                    </a>
+
+                </article>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="connections-empty">
+
+                <div class="connections-empty-icon">
+                    ✳
+                </div>
+
+                <h2>No followers yet</h2>
+
+                <p>
+                    When people follow {{ user.username }},
+                    they'll appear here.
+                </p>
+
+                <a
+                    href="{{ url_for('main.index') }}"
+                    class="button button-primary"
+                >
+                    Explore Devora
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

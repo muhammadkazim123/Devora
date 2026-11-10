@@ -1,0 +1,207 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit Profile | Devora{% endblock %}
+
+{% block content %}
+
+<div class="settings-page">
+
+    <a
+        href="{{ url_for('main.profile', username=current_user.username) }}"
+        class="page-back-link"
+    >
+        <span aria-hidden="true">←</span> Back to profile
+    </a>
+
+
+    <section class="settings-header">
+
+        <span class="eyebrow">MAKE IT YOURS</span>
+
+        <h1>
+            Edit profile<span class="brand-dot">.</span>
+        </h1>
+
+        <p>
+            Update your details and let people know a little more about you.
+        </p>
+
+    </section>
+
+
+    <section class="settings-card">
+
+        <div class="settings-card-heading">
+
+            <div>
+                <h2>Profile information</h2>
+                <p>Your public-facing details.</p>
+            </div>
+
+            <div class="settings-icon">✳</div>
+
+        </div>
+
+
+        <form
+            action="{{ url_for('main.edit_profile') }}"
+            method="POST"
+            class="settings-form"
+        >
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+
+            <!-- Username -->
+
+            <div class="form-group">
+
+                <label for="username">Username</label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    class="form-input"
+                    value="{{ request.form.get('username', current_user.username) }}"
+                    minlength="3"
+                    maxlength="30"
+                    required
+                    autocomplete="username"
+                >
+
+                <span class="form-hint">
+                    This is how people will find you on Devora.
+                </span>
+
+            </div>
+
+
+            <!-- Email -->
+
+            <div class="form-group">
+
+                <label for="email">Email address</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="form-input"
+                    value="{{ request.form.get('email', current_user.email) }}"
+                    maxlength="120"
+                    required
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+            <!-- Bio -->
+
+            <div class="form-group">
+
+                <div class="form-label-row">
+                    <label for="bio">About you</label>
+                    <span class="form-character-limit">160 characters</span>
+                </div>
+
+                <textarea
+                    id="bio"
+                    name="bio"
+                    class="form-input form-textarea"
+                    placeholder="Tell the community about yourself..."
+                    maxlength="160"
+                    rows="4"
+                    data-character-count
+                >{{ request.form.get('bio', current_user.bio or '') }}</textarea>
+
+                <span class="form-hint">
+                    Keep it short, interesting, and authentically you.
+                </span>
+
+            </div>
+
+
+            <!-- Profile Image -->
+
+            <div class="form-group">
+
+                <label for="profile_image">Profile image URL</label>
+
+                <input
+                    type="url"
+                    id="profile_image"
+                    name="profile_image"
+                    class="form-input"
+                    placeholder="https://example.com/image.jpg"
+                    value="{{ request.form.get('profile_image', current_user.profile_image or '') }}"
+                    data-image-url
+                >
+
+                <span class="form-hint">
+                    Add a direct image link, or leave this empty.
+                </span>
+
+                <div class="profile-image-preview" data-image-preview-container>
+
+                    {% if current_user.profile_image %}
+
+                        <img
+                            src="{{ current_user.profile_image }}"
+                            alt="Current profile image"
+                            data-image-preview
+                        >
+
+                    {% else %}
+
+                        <div class="profile-image-preview-placeholder">
+                            Your image preview will appear here.
+                        </div>
+
+                        <img
+                            src=""
+                            alt="Profile image preview"
+                            data-image-preview
+                            hidden
+                        >
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- Actions -->
+
+            <div class="settings-actions">
+
+                <a
+                    href="{{ url_for('main.profile', username=current_user.username) }}"
+                    class="button button-secondary"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="button button-primary"
+                >
+                    Save changes <span aria-hidden="true">↗</span>
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+{% endblock %}

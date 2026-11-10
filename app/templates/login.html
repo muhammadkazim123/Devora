@@ -1,0 +1,169 @@
+
+{% extends "base.html" %}
+
+{% block title %}Log in | Devora{% endblock %}
+
+{% block content %}
+
+<div class="auth-page">
+
+    <section class="auth-card">
+
+        <div class="auth-decoration">
+            <span class="auth-orb auth-orb-one"></span>
+            <span class="auth-orb auth-orb-two"></span>
+            <span class="auth-decoration-symbol">✳</span>
+        </div>
+
+        <div class="auth-content">
+
+            <a href="{{ url_for('main.index') }}" class="auth-brand">
+                devora<span class="brand-dot">.</span>
+            </a>
+
+            <span class="eyebrow">WELCOME BACK</span>
+
+            <h1>
+                Good to see
+                <span class="gradient-text">you again.</span>
+            </h1>
+
+            <p class="auth-description">
+                Sign in to continue connecting with the developer community.
+            </p>
+
+
+            <!-- Login Form -->
+
+            <form
+                action="{{ url_for('main.login') }}"
+                method="POST"
+                class="auth-form"
+            >
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+
+                <!-- Email -->
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        maxlength="120"
+                        required
+                        class="form-input"
+                        value="{{ request.form.get('email', '') }}"
+                    >
+
+                </div>
+
+
+                <!-- Password -->
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <div class="password-field">
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                            class="form-input"
+                        >
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-password-toggle="password"
+                            aria-label="Show password"
+                        >
+                            Show
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Submit -->
+
+                <button
+                    type="submit"
+                    class="button button-primary auth-submit"
+                >
+                    Log in <span aria-hidden="true">↗</span>
+                </button>
+
+            </form>
+
+
+            <!-- Registration Link -->
+
+            <div class="auth-switch">
+
+                <span>Don't have an account?</span>
+
+                <a href="{{ url_for('main.register') }}">
+                    Create an account
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Side Information -->
+
+    <aside class="auth-side-panel">
+
+        <div class="auth-side-content">
+
+            <span class="eyebrow">YOUR CREATIVE SPACE</span>
+
+            <h2>
+                Ideas become
+                <span class="gradient-text">something bigger.</span>
+            </h2>
+
+            <p>
+                Connect with developers, share what you're building
+                and discover new perspectives.
+            </p>
+
+            <div class="auth-side-decoration">
+
+                <span class="auth-side-line"></span>
+
+                <span>BUILD · SHARE · CONNECT</span>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+</div>
+
+{% endblock %}

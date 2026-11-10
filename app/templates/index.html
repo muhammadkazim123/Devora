@@ -1,0 +1,635 @@
+
+{% extends "base.html" %}
+
+{% block title %}Home | Devora{% endblock %}
+
+{% block content %}
+
+<div class="feed-page">
+
+    <!-- =====================================
+         FEED INTRODUCTION
+    ====================================== -->
+
+    <section class="feed-heading">
+
+        <div>
+            <span class="eyebrow">THE DEVELOPER COMMUNITY</span>
+
+            <h1>
+                Your space to
+                <span class="gradient-text">create.</span>
+            </h1>
+
+            <p class="page-description">
+                Discover ideas, share your work and connect with developers.
+            </p>
+        </div>
+
+        <div class="feed-heading-decoration" aria-hidden="true">
+            <span class="decoration-orb orb-one"></span>
+            <span class="decoration-orb orb-two"></span>
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         CREATE POST
+    ====================================== -->
+
+    {% if current_user.is_authenticated %}
+
+        <section class="create-post-card">
+
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">SHARE SOMETHING</span>
+                    <h2>Create a post</h2>
+                </div>
+
+                <span class="create-post-icon" aria-hidden="true">✳</span>
+            </div>
+
+            <form
+                action="{{ url_for('main.create_post') }}"
+                method="POST"
+                class="create-post-form"
+            >
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+                <div class="create-post-user">
+
+                    {% if current_user.profile_image %}
+
+                        <img
+                            src="{{ current_user.profile_image }}"
+                            alt="{{ current_user.username }}"
+                            class="avatar"
+                        >
+
+                    {% else %}
+
+                        <div class="avatar avatar-placeholder">
+                            {{ current_user.username[0]|upper }}
+                        </div>
+
+                    {% endif %}
+
+                    <div>
+                        <strong>{{ current_user.username }}</strong>
+                        <span>Share your thoughts with the community</span>
+                    </div>
+
+                </div>
+
+                <textarea
+                    name="content"
+                    placeholder="What's on your mind?"
+                    maxlength="5000"
+                    rows="4"
+                    class="post-textarea"
+                ></textarea>
+
+                <div class="post-image-field">
+
+                    <label for="post-image-url">
+                        Image URL <span>(optional)</span>
+                    </label>
+
+                    <input
+                        type="url"
+                        id="post-image-url"
+                        name="image_url"
+                        placeholder="https://example.com/image.jpg"
+                        class="form-input"
+                    >
+
+                </div>
+
+                <div class="create-post-actions">
+
+                    <span class="form-hint">
+                        Share an update, idea or project.
+                    </span>
+
+                    <button
+                        type="submit"
+                        class="button button-primary"
+                    >
+                        Publish post <span aria-hidden="true">↗</span>
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    {% else %}
+
+        <section class="guest-create-card">
+
+            <div>
+                <span class="eyebrow">JOIN THE COMMUNITY</span>
+
+                <h2>Your ideas deserve a place.</h2>
+
+                <p>
+                    Create an account to publish posts, follow developers
+                    and save interesting ideas.
+                </p>
+            </div>
+
+            <div class="guest-create-actions">
+
+                <a
+                    href="{{ url_for('main.register') }}"
+                    class="button button-primary"
+                >
+                    Join Devora
+                </a>
+
+                <a
+                    href="{{ url_for('main.login') }}"
+                    class="button button-secondary"
+                >
+                    Log in
+                </a>
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- =====================================
+         FEED NAVIGATION
+    ====================================== -->
+
+    <section class="feed-section">
+
+        <div class="feed-section-heading">
+
+            <div>
+                <span class="eyebrow">COMMUNITY UPDATES</span>
+                <h2>Explore the feed</h2>
+            </div>
+
+            <div class="feed-tabs">
+
+                <a
+                    href="{{ url_for('main.index', feed='for_you') }}"
+                    class="feed-tab {% if feed_type == 'for_you' %}active{% endif %}"
+                >
+                    For you
+                </a>
+
+                {% if current_user.is_authenticated %}
+
+                    <a
+                        href="{{ url_for('main.index', feed='following') }}"
+                        class="feed-tab {% if feed_type == 'following' %}active{% endif %}"
+                    >
+                        Following
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================
+             POSTS
+        ====================================== -->
+
+        {% if posts %}
+
+            <div class="posts-list">
+
+                {% for post in posts %}
+
+                    <article class="post-card" id="post-{{ post.id }}">
+
+                        <!-- Post Header -->
+
+                        <div class="post-header">
+
+                            <a
+                                href="{{ url_for('main.profile', username=post.author.username) }}"
+                                class="post-author"
+                            >
+
+                                {% if post.author.profile_image %}
+
+                                    <img
+                                        src="{{ post.author.profile_image }}"
+                                        alt="{{ post.author.username }}"
+                                        class="avatar"
+                                    >
+
+                                {% else %}
+
+                                    <div class="avatar avatar-placeholder">
+                                        {{ post.author.username[0]|upper }}
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="post-author-details">
+
+                                    <strong>{{ post.author.username }}</strong>
+
+                                    <span>
+                                        {{ post.created_at.strftime('%d %b %Y · %H:%M') }}
+                                    </span>
+
+                                </div>
+
+                            </a>
+
+                            {% if current_user.is_authenticated and post.user_id == current_user.id %}
+
+                                <form
+                                    action="{{ url_for('main.delete_post', post_id=post.id) }}"
+                                    method="POST"
+                                    class="post-delete-form"
+                                    onsubmit="return confirm('Are you sure you want to delete this post?');"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="icon-button delete-button"
+                                        aria-label="Delete post"
+                                        title="Delete post"
+                                    >
+                                        &times;
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Post Content -->
+
+                        <div class="post-content">
+
+                            {% if post.content %}
+
+                                <p>{{ post.content }}</p>
+
+                            {% endif %}
+
+                            {% if post.image_url %}
+
+                                <div class="post-image-container">
+
+                                    <img
+                                        src="{{ post.image_url }}"
+                                        alt="Image shared by {{ post.author.username }}"
+                                        class="post-image"
+                                        loading="lazy"
+                                    >
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Post Statistics -->
+
+                        <div class="post-statistics">
+
+                            <span>
+                                {{ post.likes|length }}
+                                {% if post.likes|length == 1 %}like{% else %}likes{% endif %}
+                            </span>
+
+                            <span>
+                                {{ post.comments|length }}
+                                {% if post.comments|length == 1 %}comment{% else %}comments{% endif %}
+                            </span>
+
+                        </div>
+
+
+                        <!-- Post Actions -->
+
+                        <div class="post-actions">
+
+                            {% if current_user.is_authenticated %}
+
+                                {% set liked = post.likes|selectattr('user_id', 'equalto', current_user.id)|list %}
+
+                                <form
+                                    action="{{ url_for('main.like_post', post_id=post.id) }}"
+                                    method="POST"
+                                    class="post-action-form"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="post-action-button {% if liked %}is-liked{% endif %}"
+                                    >
+                                        <span aria-hidden="true">
+                                            {% if liked %}♥{% else %}♡{% endif %}
+                                        </span>
+
+                                        {% if liked %}Liked{% else %}Like{% endif %}
+                                    </button>
+
+                                </form>
+
+
+                                {% set bookmarked = post.bookmarks|selectattr('user_id', 'equalto', current_user.id)|list %}
+
+                                <form
+                                    action="{{ url_for('main.bookmark_post', post_id=post.id) }}"
+                                    method="POST"
+                                    class="post-action-form"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="post-action-button {% if bookmarked %}is-bookmarked{% endif %}"
+                                    >
+                                        <span aria-hidden="true">
+                                            {% if bookmarked %}◆{% else %}◇{% endif %}
+                                        </span>
+
+                                        {% if bookmarked %}Saved{% else %}Save{% endif %}
+                                    </button>
+
+                                </form>
+
+                            {% else %}
+
+                                <a
+                                    href="{{ url_for('main.login') }}"
+                                    class="post-action-button"
+                                >
+                                    ♡ Like
+                                </a>
+
+                                <a
+                                    href="{{ url_for('main.login') }}"
+                                    class="post-action-button"
+                                >
+                                    ◇ Save
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- =====================================
+                             COMMENTS
+                        ====================================== -->
+
+                        <div class="post-comments">
+
+                            {% if post.comments %}
+
+                                <div class="comments-list">
+
+                                    {% for comment in post.comments|sort(attribute='created_at') %}
+
+                                        <div class="comment-item">
+
+                                            <a
+                                                href="{{ url_for('main.profile', username=comment.author.username) }}"
+                                                class="comment-avatar-link"
+                                            >
+
+                                                {% if comment.author.profile_image %}
+
+                                                    <img
+                                                        src="{{ comment.author.profile_image }}"
+                                                        alt="{{ comment.author.username }}"
+                                                        class="comment-avatar"
+                                                        loading="lazy"
+                                                    >
+
+                                                {% else %}
+
+                                                    <div class="comment-avatar comment-avatar-placeholder">
+                                                        {{ comment.author.username[0]|upper }}
+                                                    </div>
+
+                                                {% endif %}
+
+                                            </a>
+
+                                            <div class="comment-body">
+
+                                                <div class="comment-bubble">
+
+                                                    <a
+                                                        href="{{ url_for('main.profile', username=comment.author.username) }}"
+                                                        class="comment-username"
+                                                    >
+                                                        {{ comment.author.username }}
+                                                    </a>
+
+                                                    <p>{{ comment.content }}</p>
+
+                                                </div>
+
+                                                <div class="comment-meta">
+
+                                                    <span>
+                                                        {{ comment.created_at.strftime('%d %b · %H:%M') }}
+                                                    </span>
+
+                                                    {% if current_user.is_authenticated and comment.user_id == current_user.id %}
+
+                                                        <form
+                                                            action="{{ url_for('main.delete_comment', comment_id=comment.id) }}"
+                                                            method="POST"
+                                                        >
+
+                                                            <input
+                                                                type="hidden"
+                                                                name="csrf_token"
+                                                                value="{{ csrf_token() }}"
+                                                            >
+
+                                                            <button
+                                                                type="submit"
+                                                                class="comment-delete-button"
+                                                            >
+                                                                Delete
+                                                            </button>
+
+                                                        </form>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <!-- Add Comment -->
+
+                            {% if current_user.is_authenticated %}
+
+                                <form
+                                    action="{{ url_for('main.comment_post', post_id=post.id) }}"
+                                    method="POST"
+                                    class="comment-form"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <input
+                                        type="text"
+                                        name="content"
+                                        placeholder="Write a comment..."
+                                        maxlength="1000"
+                                        required
+                                        class="comment-input"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="comment-submit-button"
+                                    >
+                                        Send <span aria-hidden="true">↗</span>
+                                    </button>
+
+                                </form>
+
+                            {% else %}
+
+                                <div class="comment-login-prompt">
+
+                                    <a href="{{ url_for('main.login') }}">
+                                        Log in
+                                    </a>
+                                    to join the conversation.
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+
+        {% else %}
+
+            <!-- =====================================
+                 EMPTY FEED
+            ====================================== -->
+
+            <div class="empty-state">
+
+                <div class="empty-state-icon" aria-hidden="true">
+                    ✳
+                </div>
+
+                {% if feed_type == 'following' %}
+
+                    <h3>Your following feed is quiet.</h3>
+
+                    <p>
+                        Follow some developers to see their posts here.
+                    </p>
+
+                    <a
+                        href="{{ url_for('main.index', feed='for_you') }}"
+                        class="button button-secondary"
+                    >
+                        Explore all posts
+                    </a>
+
+                {% else %}
+
+                    <h3>It's a little quiet here.</h3>
+
+                    <p>
+                        Be the first to share something with the community.
+                    </p>
+
+                    {% if current_user.is_authenticated %}
+
+                        <a
+                            href="#"
+                            class="button button-primary"
+                            onclick="document.querySelector('.post-textarea')?.focus(); return false;"
+                        >
+                            Create your first post
+                        </a>
+
+                    {% else %}
+
+                        <a
+                            href="{{ url_for('main.register') }}"
+                            class="button button-primary"
+                        >
+                            Join Devora
+                        </a>
+
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

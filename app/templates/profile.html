@@ -1,0 +1,371 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }} | Devora{% endblock %}
+
+{% block content %}
+
+<div class="profile-page">
+
+    <!-- =====================================
+         PROFILE NAVIGATION
+    ====================================== -->
+
+    <div class="page-back-link">
+        <a href="{{ url_for('main.index') }}">
+            <span aria-hidden="true">←</span> Back to feed
+        </a>
+    </div>
+
+
+    <!-- =====================================
+         PROFILE HEADER
+    ====================================== -->
+
+    <section class="profile-card">
+
+        <div class="profile-cover">
+            <div class="profile-cover-orb cover-orb-one"></div>
+            <div class="profile-cover-orb cover-orb-two"></div>
+            <div class="profile-cover-grid"></div>
+        </div>
+
+        <div class="profile-main">
+
+            <div class="profile-avatar-wrapper">
+
+                {% if user.profile_image %}
+
+                    <img
+                        src="{{ user.profile_image }}"
+                        alt="{{ user.username }}'s profile picture"
+                        class="profile-avatar"
+                    >
+
+                {% else %}
+
+                    <div class="profile-avatar profile-avatar-placeholder">
+                        {{ user.username[0]|upper }}
+                    </div>
+
+                {% endif %}
+
+                <span class="profile-avatar-status" title="Devora member"></span>
+
+            </div>
+
+
+            <div class="profile-information">
+
+                <div class="profile-name-row">
+
+                    <div>
+                        <span class="eyebrow">DEVELOPER PROFILE</span>
+
+                        <h1>{{ user.username }}</h1>
+
+                        <p class="profile-handle">
+                            @{{ user.username }}
+                        </p>
+                    </div>
+
+
+                    {% if current_user.is_authenticated and current_user.id == user.id %}
+
+                        <a
+                            href="{{ url_for('main.edit_profile') }}"
+                            class="button button-secondary profile-edit-button"
+                        >
+                            <span aria-hidden="true">✎</span>
+                            Edit profile
+                        </a>
+
+                    {% elif current_user.is_authenticated %}
+
+                        <form
+                            action="{{ url_for('main.follow_user', user_id=user.id) }}"
+                            method="POST"
+                            class="profile-follow-form"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token() }}"
+                            >
+
+                            <button
+                                type="submit"
+                                class="button {% if is_following %}button-secondary{% else %}button-primary{% endif %}"
+                            >
+                                {% if is_following %}
+                                    Following
+                                {% else %}
+                                    + Follow
+                                {% endif %}
+                            </button>
+
+                        </form>
+
+                    {% else %}
+
+                        <a
+                            href="{{ url_for('main.login') }}"
+                            class="button button-primary"
+                        >
+                            + Follow
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="profile-bio">
+
+                    {% if user.bio %}
+
+                        <p>{{ user.bio }}</p>
+
+                    {% else %}
+
+                        <p class="muted-text">
+                            This developer hasn't written a bio yet.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="profile-joined">
+
+                    <span aria-hidden="true">✦</span>
+
+                    Member since
+                    {{ user.created_at.strftime('%B %Y') }}
+
+                </div>
+
+
+                <!-- Profile Statistics -->
+
+                <div class="profile-statistics">
+
+                    <a
+                        href="{{ url_for('main.followers', user_id=user.id) }}"
+                        class="profile-stat"
+                    >
+                        <strong>{{ user.followers|length }}</strong>
+                        <span>Followers</span>
+                    </a>
+
+                    <a
+                        href="{{ url_for('main.following', user_id=user.id) }}"
+                        class="profile-stat"
+                    >
+                        <strong>{{ user.following|length }}</strong>
+                        <span>Following</span>
+                    </a>
+
+                    <div class="profile-stat">
+                        <strong>{{ posts|length }}</strong>
+                        <span>Posts</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         USER POSTS
+    ====================================== -->
+
+    <section class="profile-posts-section">
+
+        <div class="profile-posts-heading">
+
+            <div>
+                <span class="eyebrow">SHARED BY {{ user.username|upper }}</span>
+                <h2>Posts</h2>
+            </div>
+
+            <span class="profile-post-count">
+                {{ posts|length }} total
+            </span>
+
+        </div>
+
+
+        {% if posts %}
+
+            <div class="posts-list">
+
+                {% for post in posts %}
+
+                    <article class="post-card profile-post-card">
+
+                        <!-- Post Header -->
+
+                        <div class="post-header">
+
+                            <div class="post-author">
+
+                                {% if user.profile_image %}
+
+                                    <img
+                                        src="{{ user.profile_image }}"
+                                        alt="{{ user.username }}"
+                                        class="avatar"
+                                        loading="lazy"
+                                    >
+
+                                {% else %}
+
+                                    <div class="avatar avatar-placeholder">
+                                        {{ user.username[0]|upper }}
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="post-author-details">
+
+                                    <strong>{{ user.username }}</strong>
+
+                                    <span>
+                                        {{ post.created_at.strftime('%d %b %Y · %H:%M') }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            {% if current_user.is_authenticated and current_user.id == user.id %}
+
+                                <form
+                                    action="{{ url_for('main.delete_post', post_id=post.id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Are you sure you want to delete this post?');"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="icon-button delete-button"
+                                        aria-label="Delete post"
+                                        title="Delete post"
+                                    >
+                                        &times;
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Post Content -->
+
+                        <div class="post-content">
+
+                            {% if post.content %}
+
+                                <p>{{ post.content }}</p>
+
+                            {% endif %}
+
+                            {% if post.image_url %}
+
+                                <div class="post-image-container">
+
+                                    <img
+                                        src="{{ post.image_url }}"
+                                        alt="Image shared by {{ user.username }}"
+                                        class="post-image"
+                                        loading="lazy"
+                                    >
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Post Statistics -->
+
+                        <div class="post-statistics">
+
+                            <span>
+                                {{ post.likes|length }}
+                                {% if post.likes|length == 1 %}like{% else %}likes{% endif %}
+                            </span>
+
+                            <span>
+                                {{ post.comments|length }}
+                                {% if post.comments|length == 1 %}comment{% else %}comments{% endif %}
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+
+        {% else %}
+
+            <div class="empty-state profile-empty-state">
+
+                <div class="empty-state-icon" aria-hidden="true">
+                    ✳
+                </div>
+
+                <h3>No posts yet.</h3>
+
+                {% if current_user.is_authenticated and current_user.id == user.id %}
+
+                    <p>
+                        Your first post is waiting to be shared.
+                        Start the conversation.
+                    </p>
+
+                    <a
+                        href="{{ url_for('main.index') }}"
+                        class="button button-primary"
+                    >
+                        Create a post
+                    </a>
+
+                {% else %}
+
+                    <p>
+                        {{ user.username }} hasn't shared anything yet.
+                        Check back later.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,229 @@
+
+{% extends "base.html" %}
+
+{% block title %}Saved Posts | Devora{% endblock %}
+
+{% block content %}
+
+<div class="saved-page">
+
+    <section class="saved-header">
+
+        <div>
+            <span class="eyebrow">YOUR PERSONAL COLLECTION</span>
+
+            <h1>
+                Saved posts<span class="brand-dot">.</span>
+            </h1>
+
+            <p>
+                Ideas, projects, and conversations worth coming back to.
+            </p>
+        </div>
+
+        <div class="saved-count">
+            <span>{{ posts|length }}</span>
+            <small>
+                {{ 'post' if posts|length == 1 else 'posts' }} saved
+            </small>
+        </div>
+
+    </section>
+
+
+    {% if posts %}
+
+        <section class="feed-posts">
+
+            {% for post in posts %}
+
+                <article class="post-card">
+
+                    <div class="post-header">
+
+                        <a
+                            href="{{ url_for('main.profile', username=post.author.username) }}"
+                            class="post-avatar"
+                        >
+
+                            {% if post.author.profile_image %}
+
+                                <img
+                                    src="{{ post.author.profile_image }}"
+                                    alt="{{ post.author.username }}'s profile picture"
+                                >
+
+                            {% else %}
+
+                                <span>
+                                    {{ post.author.username[0]|upper }}
+                                </span>
+
+                            {% endif %}
+
+                        </a>
+
+
+                        <div class="post-author-information">
+
+                            <a
+                                href="{{ url_for('main.profile', username=post.author.username) }}"
+                                class="post-author-name"
+                            >
+                                {{ post.author.username }}
+                            </a>
+
+                            <span class="post-timestamp">
+                                {{ post.created_at.strftime('%b %d, %Y · %H:%M') }}
+                            </span>
+
+                        </div>
+
+
+                        <div class="post-menu">
+
+                            <span class="saved-indicator">
+                                <span aria-hidden="true">✦</span> Saved
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if post.content %}
+
+                        <div class="post-content">
+                            {{ post.content }}
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if post.image_url %}
+
+                        <div class="post-image-container">
+
+                            <img
+                                src="{{ post.image_url }}"
+                                alt="Image shared by {{ post.author.username }}"
+                                class="post-image"
+                                loading="lazy"
+                            >
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="post-statistics">
+
+                        <span>
+                            <span aria-hidden="true">♥</span>
+                            {{ post.likes|length }}
+                            {{ 'like' if post.likes|length == 1 else 'likes' }}
+                        </span>
+
+                        <span>
+                            {{ post.comments|length }}
+                            {{ 'comment' if post.comments|length == 1 else 'comments' }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="post-actions">
+
+                        <form
+                            action="{{ url_for('main.like_post', post_id=post.id) }}"
+                            method="POST"
+                            class="post-action-form"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token() }}"
+                            >
+
+                            <button
+                                type="submit"
+                                class="post-action-button {% if current_user in post.likes|map(attribute='user')|list %}is-liked{% endif %}"
+                            >
+                                <span aria-hidden="true">♥</span>
+                                Like
+                            </button>
+
+                        </form>
+
+
+                        <a
+                            href="{{ url_for('main.index') }}#post-{{ post.id }}"
+                            class="post-action-button"
+                        >
+                            <span aria-hidden="true">◌</span>
+                            View feed
+                        </a>
+
+
+                        <form
+                            action="{{ url_for('main.bookmark_post', post_id=post.id) }}"
+                            method="POST"
+                            class="post-action-form"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token() }}"
+                            >
+
+                            <button
+                                type="submit"
+                                class="post-action-button is-saved"
+                            >
+                                <span aria-hidden="true">✦</span>
+                                Remove saved
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </article>
+
+            {% endfor %}
+
+        </section>
+
+    {% else %}
+
+        <section class="saved-empty-state">
+
+            <div class="saved-empty-icon">
+                ✦
+            </div>
+
+            <span class="eyebrow">NOTHING HERE YET</span>
+
+            <h2>Your collection starts here.</h2>
+
+            <p>
+                Save posts you find interesting and they'll be waiting
+                for you right here.
+            </p>
+
+            <a
+                href="{{ url_for('main.index') }}"
+                class="button button-primary"
+            >
+                Explore the feed <span aria-hidden="true">↗</span>
+            </a>
+
+        </section>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
